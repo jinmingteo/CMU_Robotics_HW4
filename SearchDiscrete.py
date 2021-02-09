@@ -62,12 +62,53 @@ for i in range(1,5,1):
 	ActionDesc.append("Move to "+Predicates[i]+" from InHallway")
 
 ###ADD YOUR CODE HERE FOR THE 3 ADDITIONAL ACTIONS:
-'''
-Actions to be added:
-1) Move to pantry from kitchen
-2) Move to kitchen from pantry
-3) Cut fruit
-'''
+
+###Actions to be added:
+
+# Move to pantry from kitchen
+pantry_index = Predicates.index('InPantry')
+kitchen_index = Predicates.index('InKitchen')
+
+Precond=np.zeros([nrObjects, nrPredicates])
+Precond[0][kitchen_index]=1  #Robot in the kitchen
+Precond[0][pantry_index]=-1 #Robot not in pantry
+
+Effect=np.zeros([nrObjects, nrPredicates])
+Effect[0][kitchen_index]=-2. #Robot not in the kitchen
+Effect[0][pantry_index]=2  #Robot in pantry
+
+ActionPre.append(Precond)
+ActionEff.append(Effect)
+ActionDesc.append("Move to pantry from kitchen")
+
+# Move to kitchen from pantry
+Precond=np.zeros([nrObjects, nrPredicates])
+Precond[0][pantry_index]=1  #Robot in the pantry
+Precond[0][kitchen_index]=-1 #Robot not in kitchen
+
+Effect=np.zeros([nrObjects, nrPredicates])
+Effect[0][pantry_index]=-2. #Robot not in the pantry
+Effect[0][kitchen_index]=2  #Robot in kitchen
+
+ActionPre.append(Precond)
+ActionEff.append(Effect)
+ActionDesc.append("Move to kitchen from pantry")
+
+# 3) Cut fruit in kitchen
+chopped_index = Predicates.index('Chopped')
+for fruit in ['Strawberry', 'Lemon']:
+	fruit_index = Objects.index(fruit)	
+	Precond=np.zeros([nrObjects, nrPredicates])
+	Precond[0][kitchen_index]=1  #Robot in the kitchen
+	Precond[fruit_index][kitchen_index]=1  #Fruit in the kitchen
+	Precond[fruit_index][chopped_index]=-1  #Fruit is not chopped
+
+	Effect=np.zeros([nrObjects, nrPredicates])
+	Effect[fruit_index][chopped_index]=2. #Fruit is chopped
+
+	ActionPre.append(Precond)
+	ActionEff.append(Effect)
+	ActionDesc.append("Robot Chop {}".format(fruit))
 
 ###Pickup object
 for i in range(1,6,1):
@@ -136,8 +177,17 @@ cost2come.append(0)
 
 FoundPath=False
 ### Add your code here to generate path ###
+while FoundPath is False:
+	index = np.random.randint(low=0, high=len(ActionPre))
+	cur_state = vertices[-1]
+	prev_action = action[-1]
+	if CheckCondition(cur_state, ActionPre[index]):
+		vertices.append(ComputeNextState(cur_state, ActionEff[index]))
+		parent.append(prev_action)
+		action.append(index)
 
-			
+	if vertices[-1].all() == GoalState.all():
+		FoundPath = True
 
 # Once you've found a path, use the code below to print out your plan
 print(f"FoundPath: {FoundPath}")
