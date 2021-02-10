@@ -21,6 +21,8 @@ def ComputeNextState(state, effect):
 	newstate=np.add(state, effect)
 	return newstate
 
+def ComputeCost(cur_state, goal_state):
+	return np.sum(abs(goal_state - cur_state)) # compare the difference
 
 Predicates=['InHallway', 'InKitchen', 'InOffice', 'InLivingRoom', 'InGarden','InPantry','Chopped','OnRobot']
 
@@ -182,6 +184,7 @@ action.append(-1)
 cost2come.append(0)
 
 FoundPath=False
+tic = time.time()
 ### Add your code here to generate path ###
 while FoundPath is False:
 	Queue_cost = np.array([cost2come[item] for item in Queue])
@@ -189,14 +192,17 @@ while FoundPath is False:
 	cur_index = Queue.pop(cur_index)
 	cur_path = vertices[cur_index]
 	cur_cost = cost2come[cur_index]
+	goal_diff = ComputeCost(cur_path, GoalState)
 	for index in range(len(ActionPre)):
 		if CheckCondition(cur_path, ActionPre[index]):
 			next_path = ComputeNextState(cur_path, ActionEff[index])
+			next_goal_diff = ComputeCost(cur_path, GoalState)
 			if not CheckVisited(next_path, vertices):
 				vertices.append(next_path)
 				parent.append(cur_index)
 				action.append(ActionDesc[index])
-				cost2come.append(cur_cost+1)
+				#cost2come.append(cur_cost+1)
+				cost2come.append(cur_cost+1 + next_goal_diff - goal_diff)
 				Queue.append(len(vertices)-1)
 			
 		if CheckCondition(vertices[-1], GoalState):
@@ -206,6 +212,7 @@ while FoundPath is False:
 	# import pdb; pdb.set_trace()
 # Once you've found a path, use the code below to print out your plan
 print(f"FoundPath: {FoundPath}")
+print("--- %s seconds ---" % (time.time() - tic))
 
 Plan=[]
 if FoundPath:
@@ -215,5 +222,3 @@ if FoundPath:
 		
 for i in range(len(Plan)):
 	print (Plan[i])
-			
-
