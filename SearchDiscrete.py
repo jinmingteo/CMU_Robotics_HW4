@@ -68,31 +68,38 @@ for i in range(1,5,1):
 # Move to pantry from kitchen
 pantry_index = Predicates.index('InPantry')
 kitchen_index = Predicates.index('InKitchen')
+on_robot_index = Predicates.index('OnRobot')
 
-Precond=np.zeros([nrObjects, nrPredicates])
-Precond[0][kitchen_index]=1  #Robot in the kitchen
-Precond[0][pantry_index]=-1 #Robot not in pantry
+for i in range(nrObjects):
+	Precond=np.zeros([nrObjects, nrPredicates])
+	if i != 0: #robot
+		Precond[i][on_robot_index]= 1 #Object on robot
+	Precond[i][kitchen_index]= 1  #Object in the kitchen
+	Precond[i][pantry_index]= -1 #Object not in pantry
 
-Effect=np.zeros([nrObjects, nrPredicates])
-Effect[0][kitchen_index]=-2. #Robot not in the kitchen
-Effect[0][pantry_index]=2  #Robot in pantry
+	Effect=np.zeros([nrObjects, nrPredicates])
+	Effect[i][kitchen_index]=-2. #Object not in the kitchen
+	Effect[i][pantry_index]=2  #Object in pantry
 
-ActionPre.append(Precond)
-ActionEff.append(Effect)
-ActionDesc.append("Move to pantry from kitchen")
+	ActionPre.append(Precond)
+	ActionEff.append(Effect)
+	ActionDesc.append("{} move to pantry from kitchen".format(Objects[i]))
 
 # Move to kitchen from pantry
-Precond=np.zeros([nrObjects, nrPredicates])
-Precond[0][pantry_index]=1  #Robot in the pantry
-Precond[0][kitchen_index]=-1 #Robot not in kitchen
+for i in range(nrObjects):
+	Precond=np.zeros([nrObjects, nrPredicates])
+	if i != 0: #robot
+		Precond[i][on_robot_index]= 1 #Object on robot
+	Precond[i][pantry_index]=1  #Robot in the pantry
+	Precond[i][kitchen_index]=-1 #Robot not in kitchen
 
-Effect=np.zeros([nrObjects, nrPredicates])
-Effect[0][pantry_index]=-2. #Robot not in the pantry
-Effect[0][kitchen_index]=2  #Robot in kitchen
+	Effect=np.zeros([nrObjects, nrPredicates])
+	Effect[i][pantry_index]=-2. #Robot not in the pantry
+	Effect[i][kitchen_index]=2  #Robot in kitchen
 
-ActionPre.append(Precond)
-ActionEff.append(Effect)
-ActionDesc.append("Move to kitchen from pantry")
+	ActionPre.append(Precond)
+	ActionEff.append(Effect)
+	ActionDesc.append("{} move to kitchen from pantry".format(Objects[i]))
 
 # 3) Cut fruit in kitchen
 chopped_index = Predicates.index('Chopped')
@@ -165,7 +172,6 @@ np.random.seed(13)
 vertices=[]
 parent=[]
 action=[]
-
 cost2come=[]
 
 Queue=[]
@@ -178,17 +184,26 @@ cost2come.append(0)
 FoundPath=False
 ### Add your code here to generate path ###
 while FoundPath is False:
-	index = np.random.randint(low=0, high=len(ActionPre))
-	cur_state = vertices[-1]
-	prev_action = action[-1]
-	if CheckCondition(cur_state, ActionPre[index]):
-		vertices.append(ComputeNextState(cur_state, ActionEff[index]))
-		parent.append(prev_action)
-		action.append(index)
-
-	if vertices[-1].all() == GoalState.all():
-		FoundPath = True
-
+	Queue_cost = np.array([cost2come[item] for item in Queue])
+	cur_index = np.argmin(Queue_cost)
+	cur_index = Queue.pop(cur_index)
+	cur_path = vertices[cur_index]
+	cur_cost = cost2come[cur_index]
+	for index in range(len(ActionPre)):
+		if CheckCondition(cur_path, ActionPre[index]):
+			next_path = ComputeNextState(cur_path, ActionEff[index])
+			if not CheckVisited(next_path, vertices):
+				vertices.append(next_path)
+				parent.append(cur_index)
+				action.append(ActionDesc[index])
+				cost2come.append(cur_cost+1)
+				Queue.append(len(vertices)-1)
+			
+		if CheckCondition(vertices[-1], GoalState):
+			FoundPath = True
+			x = Queue[-1]
+			break
+	# import pdb; pdb.set_trace()
 # Once you've found a path, use the code below to print out your plan
 print(f"FoundPath: {FoundPath}")
 
@@ -199,6 +214,6 @@ if FoundPath:
 		x=parent[x]
 		
 for i in range(len(Plan)):
-	print(ActionDesc[Plan[i]])
+	print (Plan[i])
 			
 
