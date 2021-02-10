@@ -1,4 +1,5 @@
 # Provide the actions you took to get from the inital state to the goal state
+```
 Move to InKitchen from InHallway
 Robot move to pantry from kitchen
 Pick up Lemon from InPantry
@@ -11,3 +12,4 @@ Move to InHallway from InGarden
 Move to InKitchen from InHallway
 Place Strawberry at InKitchen
 Robot Chop Strawberry
+```
