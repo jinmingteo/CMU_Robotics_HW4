@@ -177,12 +177,15 @@ vertices=[]
 parent=[]
 action=[]
 cost2come=[]
+vertices_bytes=[]
 
 Queue=[]
 Queue.append(0)
 vertices.append(InitialState)
+vertices_bytes.append(InitialState.tobytes())
 parent.append(0)
 action.append(-1)
+MODE = "astar" #djikstra / astar
 cost2come.append(0)
 
 FoundPath=False
@@ -194,17 +197,28 @@ while FoundPath is False:
 	cur_index = Queue.pop(cur_index)
 	cur_path = vertices[cur_index]
 	cur_cost = cost2come[cur_index]
-	goal_diff = ComputeCost(cur_path, GoalState)
+	if MODE != "djikstra":
+		goal_diff = ComputeCost(cur_path, GoalState)
 	for index in range(len(ActionPre)):
 		if CheckCondition(cur_path, ActionPre[index]):
 			next_path = ComputeNextState(cur_path, ActionEff[index])
-			next_goal_diff = ComputeCost(cur_path, GoalState)
+			next_path_bytes = next_path.tobytes()
+			if next_path_bytes in vertices_bytes:
+				item = vertices_bytes.index(next_path_bytes)
+				if cost2come[item] > cur_cost + 1:
+					cost2come[item] = cur_cost + 1
+					parent[item] = cur_index
+			if MODE != "djikstra":
+				next_goal_diff = ComputeCost(next_path, GoalState)
 			if not CheckVisited(next_path, vertices):
 				vertices.append(next_path)
+				vertices_bytes.append(next_path.tobytes())
 				parent.append(cur_index)
 				action.append(ActionDesc[index])
-				#cost2come.append(cur_cost+1)
-				cost2come.append(cur_cost+1 + next_goal_diff - goal_diff)
+				if MODE == "astar":
+					cost2come.append(cur_cost+1 + next_goal_diff - goal_diff)
+				else:
+					cost2come.append(cur_cost+1)
 				Queue.append(len(vertices)-1)
 			
 		if CheckCondition(vertices[-1], GoalState):
