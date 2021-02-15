@@ -21,7 +21,7 @@ Place Strawberry at InKitchen
 Robot Chop Strawberry
 ```
 
-## "Astar" Path
+## Astar Path
 ```
 FoundPath: True
 --- 10.199774742126465 seconds ---
