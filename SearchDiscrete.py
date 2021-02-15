@@ -71,6 +71,7 @@ for i in range(1,5,1):
 pantry_index = Predicates.index('InPantry')
 kitchen_index = Predicates.index('InKitchen')
 on_robot_index = Predicates.index('OnRobot')
+knife_index = Objects.index('Knife')
 
 for i in range(nrObjects):
 	Precond=np.zeros([nrObjects, nrPredicates])
@@ -108,6 +109,7 @@ chopped_index = Predicates.index('Chopped')
 for fruit in ['Strawberry', 'Lemon']:
 	fruit_index = Objects.index(fruit)	
 	Precond=np.zeros([nrObjects, nrPredicates])
+	Precond[knife_index][on_robot_index]=1
 	Precond[0][kitchen_index]=1  #Robot in the kitchen
 	Precond[fruit_index][kitchen_index]=1  #Fruit in the kitchen
 	Precond[fruit_index][chopped_index]=-1  #Fruit is not chopped
